@@ -107,10 +107,10 @@ def get_hybrid_query_engine(similarity_top_k=6, rerank=True):
     """
     Constructs a hybrid (Dense + Sparse) search query engine with optional reranking.
     """
-    # 1. Initialize Gemini settings
+
     initialize_settings()
     
-    # 2. Connect to local ChromaDB
+    # Connect to local ChromaDB
     chroma_client = chromadb.PersistentClient(path=INDEX_DIR)
     chroma_collection = chroma_client.get_collection("governance_docs")
     
@@ -121,19 +121,17 @@ def get_hybrid_query_engine(similarity_top_k=6, rerank=True):
     vector_store = ChromaVectorStore(chroma_collection=chroma_collection)
     index = VectorStoreIndex.from_vector_store(vector_store)
     
-    # 3. Create Dense Vector Retriever
+    # Vector Retriever
     vector_retriever = index.as_retriever(similarity_top_k=similarity_top_k * 2)
     
-    # 4. Create Sparse BM25 Retriever
-    # Retrieve nodes from Chroma to initialize BM25
+    # Sparse BM25 Retriever
     nodes = get_nodes_from_chroma(chroma_collection)
     bm25_retriever = PurePythonBM25Retriever(
         nodes=nodes,
         similarity_top_k=similarity_top_k * 2
     )
     
-    # 5. Build Hybrid Fusion Retriever
-    # mode="reciprocal_rerank" merges BM25 and Vector search results using Reciprocal Rank Fusion (RRF)
+    # Build Hybrid Fusion Retriever
     hybrid_retriever = QueryFusionRetriever(
         [vector_retriever, bm25_retriever],
         similarity_top_k=similarity_top_k,
@@ -142,7 +140,7 @@ def get_hybrid_query_engine(similarity_top_k=6, rerank=True):
         use_async=False
     )
     
-    # 6. Node Postprocessors (Reranker & Similarity Filters)
+    # Reranker & Similarity Filters
     node_postprocessors = []
     
     # Add Cohere Reranker if key is available in environment
@@ -160,8 +158,7 @@ def get_hybrid_query_engine(similarity_top_k=6, rerank=True):
         if rerank:
             print("[INFO] No COHERE_API_KEY found. Falling back to default RRF ranking.")
             
-        # Standard filter: removes chunks with similarity score below threshold (optional)
-        # We'll use a mild similarity threshold to remove irrelevant chunks
+
         similarity_filter = SimilarityPostprocessor(similarity_cutoff=0.0)
         node_postprocessors.append(similarity_filter)
         

@@ -63,15 +63,11 @@ def ingest_documents():
         
         if file_path.endswith('.csv'):
             import csv
-            MAX_ROWS = 10000
             try:
                 with open(file_path, mode='r', encoding='utf-8-sig') as f:
                     reader = csv.DictReader(f)
                     row_idx = 0
                     for row in reader:
-                        if row_idx >= MAX_ROWS:
-                            print(f"  -> [RATE LIMIT PROTECTION] Capped parsing at {MAX_ROWS} rows for {file_name} to avoid Gemini free-tier 429 quota errors.")
-                            break
                             
                         row_content_parts = []
                         metadata = {

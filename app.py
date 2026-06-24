@@ -217,7 +217,7 @@ else:
 
         # Assistant generation display
         with st.chat_message("assistant"):
-            with st.spinner("Analyzing context & generating grounded answer..."):
+            with st.spinner("Thinking..."):
                 try:
                     # Run search and generation
                     result = generate_grounded_answer(query, st.session_state.query_engine)

@@ -14,7 +14,7 @@ graph TD
     Ingest[data/ Policy CSVs] --> LocalEmbed[Local BGE Embedder]
     LocalEmbed --> Chroma[ChromaDB Local Vector DB]
     
-    UserQuery[User Query] --> Dense["Dense Vector Search (BAAI/bge-small)"]
+    UserQuery[User Query] --> Dense["Vector Search - BAAI/bge-small (local embedding model)"]
     UserQuery --> Sparse["Custom BM25 Search (Keyword Matching)"]
     
     Dense --> RRF["Reciprocal Rank Fusion (RRF)"]
@@ -24,7 +24,7 @@ graph TD
     Filter --> LLM["Gemini 2.5 Flash Generator"]
     
     LLM --> Guardrail[LLM Grounding Auditor]
-    Guardrail --> UI[Minimalist Streamlit Chat Portal]
+    Guardrail --> UI[Streamlit Chat Portal]
 ```
 
 ---
@@ -34,7 +34,7 @@ graph TD
 In alignment with the open-ended nature of this assessment, the following technical choices were made to optimize for **correctness**, **grounding**, and **retrieval quality**:
 
 ### A. Hybrid Search (Dense Semantic + Sparse Keyword)
-* **The Decision:** We combined Dense Vector Search (using cosine similarity) with a custom Sparse BM25 Keyword Search.
+* **The Decision:** We combined Dense Vector Search with a custom Sparse BM25 Keyword Search.
 * **The Reason:** Governance documents contain strict clause numbers, section IDs, and legal terms (e.g., *"CREATE AI Act of 2023"* or *"Section 4.2"*). 
   * Vector embeddings excel at conceptual meaning but frequently miss exact alphanumerics or keyword codes.
   * BM25 excels at exact keyword matching but misses conceptual synonyms. 

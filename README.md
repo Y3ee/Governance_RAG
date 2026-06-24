@@ -87,7 +87,7 @@ python ingest.py
 ```
 
 ### 4. Run the Chat Portal
-Launch the clean, Apple-inspired Streamlit frontend:
+Launch the Streamlit frontend:
 ```bash
 streamlit run app.py
 ```
@@ -98,5 +98,5 @@ streamlit run app.py
 
 If I had more time or a production environment, I would implement:
 1. **Asynchronous Batching for Ingestion**: For corpora exceeding 100,000 files, we should use a message broker (like RabbitMQ) and task queues (like Celery) to load documents asynchronously in the background.
-2. **Multi-Hop Reasoning**: Currently, the retriever is single-turn. If a user asks a question that requires connecting facts from two completely different documents (e.g., *"Does the CREATE AI Act violate China's cybersecurity standard?"*), a **ReAct Agent** loop would be needed to decompose the query into sub-questions and search sequentially.
+2. **Multi-Hop Reasoning**: Currently, the retriever is single-turn. If a user asks a question that requires connecting facts from two completely different documents (e.g., *"Does the CREATE AI Act violate China's cybersecurity standard?"*), a **re-Act Agent** loop would be needed to decompose the query into sub-questions and search sequentially.
 3. **Dynamic PDF Layout Parsing**: Standard PDF readers struggle with visual tables and headers. Using a layout-aware parser (like `LlamaParse` or `Marker`) would improve retrieval quality for scanned PDF policy files.

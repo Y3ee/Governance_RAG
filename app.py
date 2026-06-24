@@ -6,14 +6,14 @@ from retrieve import get_hybrid_query_engine
 from generate import generate_grounded_answer
 from ingest import ingest_documents
 
-# Page configuration
+
 st.set_page_config(
     page_title="Governance RAG Portal",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# Custom Premium Styling (Apple-inspired minimalist design)
+
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
@@ -123,7 +123,6 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Helper to get uniquely indexed files from ChromaDB
 def get_indexed_files():
     try:
         chroma_client = chromadb.PersistentClient(path=INDEX_DIR)
@@ -139,19 +138,18 @@ def get_indexed_files():
         pass
     return [], 0
 
-# header
+
 st.markdown("<div class='title-text'>Governance Policy RAG Portal</div>", unsafe_allow_html=True)
 st.markdown("<div class='subtitle-text'>Hybrid Semantic Search and Automated Compliance Grounding for Governance Documentation</div>", unsafe_allow_html=True)
 st.markdown("<div class='clean-divider'></div>", unsafe_allow_html=True)
 
-# Fetch indexed files for filtering
+
 available_files, chunk_count = get_indexed_files()
 
-# Sidebar Configuration
 st.sidebar.title("System Configuration")
 st.sidebar.markdown("---")
 
-# Display status of the local vector database
+
 if chunk_count > 0:
     st.sidebar.success(f"Database Active: {chunk_count} chunks indexed from {len(available_files)} files.")
 else:
@@ -159,7 +157,7 @@ else:
 
 st.sidebar.markdown("### Document Filter")
 
-# Let the user filter by document name
+
 selected_files = st.sidebar.multiselect(
     "Search only in:",
     options=available_files,
@@ -198,7 +196,7 @@ if st.sidebar.button("Sync and Index Documents"):
         else:
             st.sidebar.error("Ingestion failed. Please verify files are placed inside data folder.")
 
-# Main Application Logic
+# Main Application 
 if chunk_count == 0:
     st.info("Welcome! It looks like your vector database is empty. Put some governance CSV files in the data folder and click 'Sync and Index Documents' on the left sidebar to start.")
 else:
@@ -219,24 +217,23 @@ else:
         with st.chat_message("assistant"):
             with st.spinner("Thinking..."):
                 try:
-                    # Run search and generation
+
                     result = generate_grounded_answer(query, st.session_state.query_engine)
                     
-                    # Apply manual frontend filter if documents were selected
+
                     sources_to_show = result["sources"]
                     if selected_files:
                         sources_to_show = [s for s in result["sources"] if s["file_name"] in selected_files]
 
-                    # Show compliance grounding audit badge
                     if result["is_grounded"]:
                         st.markdown("<span class='badge-grounded'>Grounding Audited and Verified</span>", unsafe_allow_html=True)
                     else:
                         st.markdown("<span class='badge-warning'>Grounding Warning: Potential Extrapolation</span>", unsafe_allow_html=True)
                     
-                    # Print generated response
+
                     st.write(result["answer"])
                     
-                    # Show sources and citations in accordion tabs
+
                     st.markdown("#### Verified Source References")
                     
                     if not sources_to_show:

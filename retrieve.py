@@ -10,7 +10,6 @@ from llama_index.core.query_engine import RetrieverQueryEngine
 from llama_index.core.postprocessor import SimilarityPostprocessor
 import chromadb
 
-# Import configuration
 from config import INDEX_DIR, GEMINI_API_KEY
 from ingest import initialize_settings
 

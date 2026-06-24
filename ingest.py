@@ -62,9 +62,7 @@ def ingest_documents():
         print(f"Processing: {file_name}...")
         
         if file_path.endswith('.csv'):
-            # Custom CSV Parser to turn rows into structured nodes
             import csv
-            # We limit rows to 10000 per CSV to read all data (since total rows across all CSVs is 6188)
             MAX_ROWS = 10000
             try:
                 with open(file_path, mode='r', encoding='utf-8-sig') as f:
@@ -75,19 +73,17 @@ def ingest_documents():
                             print(f"  -> [RATE LIMIT PROTECTION] Capped parsing at {MAX_ROWS} rows for {file_name} to avoid Gemini free-tier 429 quota errors.")
                             break
                             
-                        # Format row content nicely: "ColumnHeader: Value"
                         row_content_parts = []
                         metadata = {
                             "file_name": file_name,
                             "page_label": f"Row {row_idx + 1}"
                         }
                         
-                        # Extract row columns
                         for col_name, col_val in row.items():
                             if col_val and col_val.strip():
                                 row_content_parts.append(f"{col_name}: {col_val.strip()}")
                                 
-                                # Promote common column fields to metadata for filtering/search
+                                
                                 clean_col = col_name.lower().strip()
                                 if clean_col in ["policy", "policy_name", "title", "policy name"]:
                                     metadata["policy_name"] = col_val.strip()
@@ -96,11 +92,9 @@ def ingest_documents():
                         
                         row_text = "\n".join(row_content_parts)
                         
-                        # Skip empty rows
                         if not row_text.strip():
                             continue
                             
-                        # Create LlamaIndex TextNode
                         node = TextNode(
                             text=row_text,
                             metadata=metadata
@@ -136,20 +130,16 @@ def ingest_documents():
 
     print(f"Total chunks created across all files: {len(nodes)}")
 
-    # 3. Setup ChromaDB Vector Store
+
     print(f"Connecting to ChromaDB at: {INDEX_DIR}")
     chroma_client = chromadb.PersistentClient(path=INDEX_DIR)
     
-    # Get or create collection
     chroma_collection = chroma_client.get_or_create_collection("governance_docs")
-    
-    # Connect LlamaIndex ChromaVectorStore wrapper to the Chroma Collection
+
     vector_store = ChromaVectorStore(chroma_collection=chroma_collection)
-    
-    # Storage context tells LlamaIndex where to store vectors
+
     storage_context = StorageContext.from_defaults(vector_store=vector_store)
 
-    # 4. Generate embeddings in batches manually
     print("Generating embeddings in batches via local HuggingFace model...")
     
     node_texts = [node.get_content(metadata_mode="embed") for node in nodes]

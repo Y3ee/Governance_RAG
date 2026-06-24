@@ -62,11 +62,9 @@ def generate_grounded_answer(query, query_engine):
     Queries the hybrid retrieval engine, generates the answer with citations,
     and runs a compliance guardrail check to prevent hallucination.
     """
-    # Set the custom QA prompt template on the query engine
     qa_prompt = PromptTemplate(QA_PROMPT_TMPL)
     query_engine.update_prompts({"response_synthesizer:text_qa_template": qa_prompt})
     
-    # Run the query
     print(f"Retrieving and generating for query: '{query}'...")
     response = query_engine.query(query)
     
@@ -80,7 +78,7 @@ def generate_grounded_answer(query, query_engine):
     
     full_context_str = "\n\n".join(context_chunks)
     
-    # Run guardrail verification
+    # guardrail verification
     is_grounded = verify_answer_groundedness(full_context_str, query, response.response)
     
     return {
@@ -98,7 +96,7 @@ def generate_grounded_answer(query, query_engine):
     }
 
 if __name__ == "__main__":
-    # Test generation logic
+
     engine = get_hybrid_query_engine(similarity_top_k=3, rerank=False)
     test_query = "What is the policy?"
     

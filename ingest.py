@@ -4,7 +4,7 @@ import glob
 from llama_index.core import SimpleDirectoryReader, StorageContext, VectorStoreIndex, Settings
 from llama_index.core.schema import TextNode
 from llama_index.core.node_parser import SentenceSplitter
-from llama_index.embeddings.google_genai import GoogleGenAIEmbedding
+from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.llms.google_genai import GoogleGenAI
 from llama_index.vector_stores.chroma import ChromaVectorStore
 import chromadb
@@ -13,29 +13,20 @@ import chromadb
 from config import DATA_DIR, INDEX_DIR, CHUNK_SIZE, CHUNK_OVERLAP, LLM_MODEL, EMBED_MODEL, GEMINI_API_KEY
 
 def initialize_settings():
-    """
-    Initializes LlamaIndex global settings (LLM and Embedding model).
-    This ensures that all index and query operations use Gemini.
-    """
+    #initialize 
     if not GEMINI_API_KEY:
         print("[ERROR] GEMINI_API_KEY is not set. Please create a .env file containing: GEMINI_API_KEY=your_key")
         sys.exit(1)
         
-    # Configure Gemini Embeddings with a larger batch size to minimize API requests
-    Settings.embed_model = GoogleGenAIEmbedding(
-        model_name=EMBED_MODEL,
-        api_key=GEMINI_API_KEY,
-        embed_batch_size=100
+    Settings.embed_model = HuggingFaceEmbedding(
+        model_name="BAAI/bge-small-en-v1.5"
     )
-    
-    # Configure Gemini LLM
-    # Model: gemini-1.5-flash (Fast, accurate, large context window)
+
     Settings.llm = GoogleGenAI(
         model_name=LLM_MODEL,
         api_key=GEMINI_API_KEY
     )
     
-    # Configure Default Chunker Settings
     Settings.node_parser = SentenceSplitter(
         chunk_size=CHUNK_SIZE,
         chunk_overlap=CHUNK_OVERLAP
@@ -158,23 +149,20 @@ def ingest_documents():
     # Storage context tells LlamaIndex where to store vectors
     storage_context = StorageContext.from_defaults(vector_store=vector_store)
 
-    # 4. Generate embeddings in batches manually to bypass LlamaIndex's one-by-one loop
-    print("Generating embeddings in batches via Gemini API (Rate Limit Protection)...")
+    # 4. Generate embeddings in batches manually
+    print("Generating embeddings in batches via local HuggingFace model...")
     
     node_texts = [node.get_content(metadata_mode="embed") for node in nodes]
-    batch_size = 100  # Max batch size allowed by Google API
+    batch_size = 100
     embeddings = []
     
-    import time
     total_batches = ((len(node_texts) - 1) // batch_size) + 1
     for i in range(0, len(node_texts), batch_size):
         batch = node_texts[i:i + batch_size]
         print(f"  -> Processing embedding batch {i // batch_size + 1} of {total_batches} ({len(batch)} nodes)...")
-        # Generate batch embeddings (only 1 API request per batch)
+        # Generate batch embeddings locally (no API call, runs on CPU)
         batch_embeddings = Settings.embed_model.get_text_embedding_batch(batch)
         embeddings.extend(batch_embeddings)
-        # Sleep for 2.0 seconds between batches to be absolutely safe on Free Tier (100 RPM limit)
-        time.sleep(2.0)
         
     # Assign embeddings back to nodes
     for node, embedding in zip(nodes, embeddings):

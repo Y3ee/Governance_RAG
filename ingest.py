@@ -73,8 +73,8 @@ def ingest_documents():
         if file_path.endswith('.csv'):
             # Custom CSV Parser to turn rows into structured nodes
             import csv
-            # We limit rows to 40 per CSV to stay within the Gemini API Free Tier embedding rate limits (100 RPM)
-            MAX_ROWS = 40
+            # We limit rows to 10000 per CSV to read all data (since total rows across all CSVs is 6188)
+            MAX_ROWS = 10000
             try:
                 with open(file_path, mode='r', encoding='utf-8-sig') as f:
                     reader = csv.DictReader(f)
@@ -162,18 +162,19 @@ def ingest_documents():
     print("Generating embeddings in batches via Gemini API (Rate Limit Protection)...")
     
     node_texts = [node.get_content(metadata_mode="embed") for node in nodes]
-    batch_size = 50
+    batch_size = 100  # Max batch size allowed by Google API
     embeddings = []
     
     import time
+    total_batches = ((len(node_texts) - 1) // batch_size) + 1
     for i in range(0, len(node_texts), batch_size):
         batch = node_texts[i:i + batch_size]
-        print(f"  -> Processing embedding batch {i // batch_size + 1} ({len(batch)} nodes)...")
+        print(f"  -> Processing embedding batch {i // batch_size + 1} of {total_batches} ({len(batch)} nodes)...")
         # Generate batch embeddings (only 1 API request per batch)
         batch_embeddings = Settings.embed_model.get_text_embedding_batch(batch)
         embeddings.extend(batch_embeddings)
-        # Sleep for 1.5 seconds between batches to be absolutely safe
-        time.sleep(1.5)
+        # Sleep for 2.0 seconds between batches to be absolutely safe on Free Tier (100 RPM limit)
+        time.sleep(2.0)
         
     # Assign embeddings back to nodes
     for node, embedding in zip(nodes, embeddings):

@@ -39,10 +39,10 @@ def ingest_documents():
     """
     print(f"Checking for documents in: {DATA_DIR}")
     
-    # Check if there are any supported files in data folder
+    # Check if there are any supported files in data folder and subfolders recursively
     supported_files = []
     for ext in ['*.pdf', '*.txt', '*.md', '*.csv']:
-        supported_files.extend(glob.glob(os.path.join(DATA_DIR, ext)))
+        supported_files.extend(glob.glob(os.path.join(DATA_DIR, '**', ext), recursive=True))
         
     if not supported_files:
         print(f"\n[WARNING] No documents found in '{DATA_DIR}'.")

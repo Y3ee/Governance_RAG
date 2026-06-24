@@ -1,8 +1,9 @@
 # Governance Document Hybrid RAG Engine
 ### Intern Assessment Documentation & Architecture Overview
 
+'''
 This project implements a local-first, production-grade Retrieval-Augmented Generation (RAG) system optimized for corporate governance and regulatory compliance documents. It is designed to deliver useful, accurate, and grounded answers over a document corpus while respecting API constraints.
-
+'''
 
 ## 1. High-Level System Architecture
 
@@ -13,14 +14,14 @@ graph TD
     Ingest[data/ Policy CSVs] --> LocalEmbed[Local BGE Embedder]
     LocalEmbed --> Chroma[ChromaDB Local Vector DB]
     
-    UserQuery[User Query] --> Dense[Dense Vector Search (BAAI/bge-small)]
-    UserQuery --> Sparse[Custom BM25 Search (Keyword Matching)]
+    UserQuery[User Query] --> Dense["Dense Vector Search (BAAI/bge-small)"]
+    UserQuery --> Sparse["Custom BM25 Search (Keyword Matching)"]
     
-    Dense --> RRF[Reciprocal Rank Fusion RRF]
+    Dense --> RRF["Reciprocal Rank Fusion (RRF)"]
     Sparse --> RRF
     
     RRF --> Filter[Similarity Score Filter]
-    Filter --> LLM[Gemini 2.5 Flash Generator]
+    Filter --> LLM["Gemini 2.5 Flash Generator"]
     
     LLM --> Guardrail[LLM Grounding Auditor]
     Guardrail --> UI[Minimalist Streamlit Chat Portal]

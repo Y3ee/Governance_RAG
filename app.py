@@ -250,7 +250,7 @@ else:
                                 <div class="source-card">
                                     <strong>Document:</strong> {source['file_name']}<br/>
                                     <strong>Page:</strong> {source['page']}<br/>
-                                    <strong>Search Match Score:</strong> {source['score']:.4f if source['score'] is not None else 'N/A'}<br/>
+                                    <strong>Search Match Score:</strong> {f"{source['score']:.4f}" if source['score'] is not None else 'N/A'}<br/>
                                     <hr style="margin: 8px 0; border: 0; border-top: 1px solid rgba(255,255,255,0.1);"/>
                                     <em>"{source['text'][:150]}..."</em>
                                 </div>

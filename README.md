@@ -59,7 +59,7 @@ In alignment with the open-ended nature of this assessment, the following techni
 ---
 
 ## 3. Assumptions Made
-1. **Document Format:** We assumed that the governance document data consists of structured CSV files (representing regulatory databases) as well as standard text/PDF files. We built a custom parser to read CSV rows as individual database entries.
+1. **Document Format:** We assumed that the governance document data consists of structured CSV files (representing regulatory databases) as well as standard text files. We built a custom parser to read CSV rows as individual database entries.
 2. **Citation Requirement:** We assumed that every compliance answer is useless without proof. Therefore, we structured the LLM prompt to strictly map claims to metadata citations: `[Document: name, Page: Row X]`.
 3. **Environment:** We assumed that the final grading environment runs on a standard machine that may not have dedicated GPUs or installed C-compilers. Our code runs on CPU-only setups out of the box.
 
